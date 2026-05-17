@@ -20,7 +20,6 @@ A modern full-stack project and task management system designed for simplicity a
 ## Folder Structure
 
 ```text
-TaskFlow/
 ├── backend/
 │   ├── data/               # (Optional) Data directory
 │   ├── routes/             # API routes (projects, tasks)
