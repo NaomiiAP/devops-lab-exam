@@ -6,22 +6,15 @@ steps:
 - checkout: self
   fetchDepth: 0
 
-- task: SonarQubePrepare@7
-  inputs:
-    SonarQube: 'sonar'
-    scannerMode: 'cli'
-    configMode: 'manual'
-    cliProjectKey: 'Taskflow'
-    cliProjectName: 'Taskflow'
-    cliSources: '.'
-    extraProperties: |
-      sonar.scm.provider=git
-
-- task: SonarQubeAnalyze@7
-
-- task: SonarQubePublish@7
-  inputs:
-    pollingTimeoutSec: '300'
+- script: |
+    sonar-scanner ^
+      -Dsonar.projectKey=Taskflow ^
+      -Dsonar.projectName=Taskflow ^
+      -Dsonar.sources=. ^
+      -Dsonar.host.url=$(SONAR_HOST_URL) ^
+      -Dsonar.token=$(SONAR_TOKEN) ^
+      -Dsonar.scm.provider=git
+  displayName: Run SonarQube Analysis
 
 - script: docker compose build
   displayName: Build Docker Images
