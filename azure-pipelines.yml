@@ -1,5 +1,4 @@
-trigger:
-- main
+trigger: none
 
 pool:
   name: Default
@@ -15,7 +14,7 @@ steps:
     cliProjectName: 'Taskflow'
     cliSources: '.'
     extraProperties: |
-      sonar.branch.name=
+      sonar.scm.disabled=true
 
 - task: SonarQubeAnalyze@7
 
