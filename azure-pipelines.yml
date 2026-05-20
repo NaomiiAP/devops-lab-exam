@@ -1,0 +1,16 @@
+trigger:
+- main
+
+pool:
+  name: Default
+
+steps:
+
+- script: docker compose build
+  displayName: Build Frontend and Backend Images
+
+- script: docker compose up -d
+  displayName: Start Containers
+
+- script: docker ps
+  displayName: Verify Running Containers
