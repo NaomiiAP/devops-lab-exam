@@ -9,11 +9,13 @@ steps:
 - task: SonarQubePrepare@7
   inputs:
     SonarQube: 'sonar'
-    scannerMode: 'CLI'
+    scannerMode: 'cli'
     configMode: 'manual'
     cliProjectKey: 'Taskflow'
     cliProjectName: 'Taskflow'
     cliSources: '.'
+    extraProperties: |
+      sonar.branch.name=
 
 - task: SonarQubeAnalyze@7
 
