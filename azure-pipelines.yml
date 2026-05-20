@@ -6,11 +6,26 @@ pool:
 
 steps:
 
+- task: SonarQubePrepare@7
+  inputs:
+    SonarQube: 'sonar'
+    scannerMode: 'CLI'
+    configMode: 'manual'
+    cliProjectKey: 'Taskflow'
+    cliProjectName: 'Taskflow'
+    cliSources: '.'
+
+- task: SonarQubeAnalyze@7
+
+- task: SonarQubePublish@7
+  inputs:
+    pollingTimeoutSec: '300'
+
 - script: docker compose build
-  displayName: Build Frontend and Backend Images
+  displayName: Build Docker Images
 
 - script: docker compose up -d
-  displayName: Start Containers
+  displayName: Run Containers
 
 - script: docker ps
-  displayName: Verify Running Containers
+  displayName: Check Running Containers
