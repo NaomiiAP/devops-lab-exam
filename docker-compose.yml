@@ -6,7 +6,7 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/?retryWrites=true&w=majority
+      - MONGO_URI=addenvhere
 
   frontend:
     build: ./frontend
