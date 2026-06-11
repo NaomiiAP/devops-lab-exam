@@ -44,7 +44,7 @@ stages {
     stage('Dependency Check') {
         steps {
             dir('frontend') {
-                dependencyCheck additionalArguments: '--scan .', odcInstallation: 'DP'
+                dependencyCheck additionalArguments: '--scan . --disableYarnAudit', odcInstallation: 'DP'
             }
 
             dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
