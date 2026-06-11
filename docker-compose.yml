@@ -6,7 +6,7 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - MONGO_URI=addenvhere
+      - MONGO_URI=mongodb+srv://naomiiap:nayohmee@cluster0.tda1xix.mongodb.net/?appName=Cluster0
 
   frontend:
     build: ./frontend

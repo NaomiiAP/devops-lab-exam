@@ -1,65 +1,111 @@
 pipeline {
     agent any
 
+    tools {
+        jdk 'JDK'
+    }
+
+    environment {
+        SCANNER_HOME = tool 'Sonar-scanner'
+        DOCKERHUB_USERNAME = 'thatoneukie'
+        BACKEND_IMAGE = "${DOCKERHUB_USERNAME}/taskflow-backend"
+        FRONTEND_IMAGE = "${DOCKERHUB_USERNAME}/taskflow-frontend"
+    }
+
     stages {
-        // Stage 1: Clone
-        // This stage is usually handled automatically by Jenkins when pulling from Git.
-        stage('Clone') {
+
+        stage('Git Version Check') {
             steps {
-                echo 'Stage 1: Cloning repository...'
-                // checkout scm
+                bat 'git --version'
+                bat 'git log -1 --oneline'
             }
         }
 
-        // Stage 2: Install Dependencies
-        stage('Install Dependencies') {
+        stage('Checkout Code') {
             steps {
-                echo 'Stage 2: Installing dependencies...'
-                sh '''
+                git branch: 'main', url: 'https://github.com/NaomiiAP/devops-lab-exam.git'
+            }
+        }
+
+        stage('Dependency Check') {
+            steps {
+                dependencyCheck additionalArguments: '--scan .', odcInstallation: 'DP'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                bat '''
                     cd backend
                     pip install -r requirements.txt
                 '''
-                sh '''
+                bat '''
                     cd frontend
                     npm install
-                '''
-            }
-        }
-
-        // Stage 3: Build
-        stage('Build') {
-            steps {
-                echo 'Stage 3: Building application...'
-                echo 'Backend: No-op for Python'
-                sh '''
-                    cd frontend
                     npm run build
                 '''
             }
         }
 
-        // Stage 4: Test
         stage('Test') {
             steps {
-                echo 'Stage 4: Running tests...'
-                sh '''
+                bat '''
                     cd backend
                     python -m unittest discover
                 '''
-                sh '''
+                bat '''
                     cd frontend
                     npm test
                 '''
             }
         }
 
-        // Stage 5: Deploy
-        stage('Deploy') {
+        stage('Code Quality Check') {
             steps {
-                echo 'Stage 5: Deploying application...'
-                sh '''
-                    docker-compose up --build -d
-                '''
+                script {
+                    withSonarQubeEnv('SonarQube-server') {
+                        bat """
+                        ${SCANNER_HOME}\\bin\\sonar-scanner ^
+                        -Dsonar.projectName=devops-lab-exam ^
+                        -Dsonar.projectKey=devops-lab-exam ^
+                        -Dsonar.sources=backend,frontend/src ^
+                        -Dsonar.exclusions=**/node_modules/**,**/__pycache__/**,**/dist/**
+                        """
+                    }
+                }
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: false
+                }
+            }
+        }
+
+        stage('Containerization') {
+            steps {
+                bat "docker build -t ${BACKEND_IMAGE}:${BUILD_NUMBER} -t ${BACKEND_IMAGE}:latest ./backend"
+                bat "docker build -t ${FRONTEND_IMAGE}:${BUILD_NUMBER} -t ${FRONTEND_IMAGE}:latest ./frontend"
+            }
+        }
+
+        stage('Host Image on Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
+                    bat "docker push ${BACKEND_IMAGE}:${BUILD_NUMBER}"
+                    bat "docker push ${BACKEND_IMAGE}:latest"
+                    bat "docker push ${FRONTEND_IMAGE}:${BUILD_NUMBER}"
+                    bat "docker push ${FRONTEND_IMAGE}:latest"
+                }
+            }
+        }
+
+        stage('Deployment') {
+            steps {
+                bat 'docker-compose up --build -d'
             }
         }
     }

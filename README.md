@@ -91,10 +91,42 @@ To run both services together using Docker Compose:
 ## Jenkins Pipeline Overview
 
 The project includes a `Jenkinsfile` with the following stages:
-1. **Clone**: Pulls the repository from SCM.
-2. **Install Dependencies**: Installs Python and Node.js dependencies.
+1. **Git Version Check**: Verifies Git and prints the current commit.
+2. **Dependency Check**: Installs and verifies Python and Node.js dependencies.
 3. **Build**: Builds the frontend production bundle.
 4. **Test**: Runs backend and frontend tests.
-5. **Deploy**: Starts the application using Docker Compose.
+5. **Code Quality Check**: SonarQube scan and quality gate.
+6. **Containerization**: Builds Docker images for backend and frontend.
+7. **Host Image on Docker Hub**: Pushes images to `thatoneukie/taskflow-backend` and `thatoneukie/taskflow-frontend`.
+8. **Deployment**: Starts the application using Docker Compose.
 
-*Note: The pipeline uses actual shell commands but assumes the necessary tools (Python, Node, Docker) are installed on the Jenkins agent.*
+*Note: The pipeline uses actual shell commands but assumes the necessary tools (Python, Node, Docker, SonarScanner) are installed on the Jenkins agent.*
+
+### Trigger on Git Push
+
+1. In Jenkins, create a **Pipeline** or **Multibranch Pipeline** job and point it at this repo (`Jenkinsfile` in the root).
+2. Under **Build Triggers**, enable **GitHub hook trigger for GITScm polling** (GitHub) or the equivalent webhook for your Git host.
+3. Add a webhook in your Git provider that POSTs to `http://<jenkins-url>/github-webhook/` on every push.
+
+Each push runs the full pipeline, including SonarQube analysis, so the dashboard stays up to date.
+
+### SonarQube Setup (one-time)
+
+SonarQube runs as a local install (extracted zip), not in Docker. Keep it running while Jenkins builds.
+
+1. **Start SonarQube** from your extracted folder:
+   - **Windows**: run `bin\windows-x86-64\StartSonar.bat`
+   - **Linux/macOS**: run `bin/linux-x86-64/sonar.sh start` (or `macosx-x86-64` on Mac)
+
+   Open `http://localhost:9000` (default login: `admin` / `admin`).
+
+2. **Create a project** in SonarQube with key `taskflow` (must match `sonar-project.properties` and `SONAR_PROJECT_KEY` in the Jenkinsfile).
+
+3. **Generate a token** in SonarQube: *My Account → Security → Generate Tokens*.
+
+4. **Configure Jenkins**:
+   - Install plugins: **SonarQube Scanner**, **SonarQube Quality Gates**.
+   - *Manage Jenkins → System → SonarQube servers*: add server named `SonarQube`, URL `http://localhost:9000`, token from step 3.
+   - *Manage Jenkins → Tools → SonarQube Scanner*: add tool named `SonarQubeScanner` (install automatically, or point to your extracted scanner zip).
+
+After this, every git push triggers the pipeline and Jenkins sends fresh analysis results to your local SonarQube instance.
