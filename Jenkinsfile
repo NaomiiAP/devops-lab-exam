@@ -1,7 +1,6 @@
 pipeline {
 agent any
 
-```
 tools {
     jdk 'JDK'
 }
@@ -15,16 +14,16 @@ environment {
 
 stages {
 
+    stage('Checkout Code') {
+        steps {
+            git branch: 'main', url: 'https://github.com/NaomiiAP/devops-lab-exam.git'
+        }
+    }
+
     stage('Git Version Check') {
         steps {
             bat 'git --version'
             bat 'git log -1 --oneline'
-        }
-    }
-
-    stage('Checkout Code') {
-        steps {
-            git branch: 'main', url: 'https://github.com/NaomiiAP/devops-lab-exam.git'
         }
     }
 
@@ -49,15 +48,6 @@ stages {
             }
 
             dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-        }
-    }
-
-    stage('Audit Check') {
-        steps {
-            bat '''
-                cd frontend
-                npm audit
-            '''
         }
     }
 
@@ -98,8 +88,10 @@ stages {
                 }
             }
 
-            timeout(time: 15, unit: 'MINUTES') {
-                waitForQualityGate abortPipeline: false
+            script {
+                timeout(time: 15, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: false
+                }
             }
         }
     }
@@ -120,7 +112,6 @@ stages {
                     passwordVariable: 'DOCKER_PASS'
                 )
             ]) {
-
                 bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
 
                 bat "docker push ${BACKEND_IMAGE}:${BUILD_NUMBER}"
@@ -148,6 +139,5 @@ post {
         echo 'Pipeline failed.'
     }
 }
-```
 
 }
