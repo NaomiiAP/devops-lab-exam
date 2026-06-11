@@ -27,14 +27,7 @@ pipeline {
             }
         }
 
-        stage('Dependency Check') {
-            steps {
-                dependencyCheck additionalArguments: '--scan .', odcInstallation: 'DP'
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-            }
-        }
-
-        stage('Build') {
+        stage('Install Dependencies') {
             steps {
                 bat '''
                     cd backend
@@ -43,6 +36,23 @@ pipeline {
                 bat '''
                     cd frontend
                     npm install
+                '''
+            }
+        }
+
+        stage('Dependency Check') {
+            steps {
+                dir('frontend') {
+                    dependencyCheck additionalArguments: '--scan .', odcInstallation: 'DP'
+                }
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                bat '''
+                    cd frontend
                     npm run build
                 '''
             }
