@@ -20,4 +20,8 @@ export const tasksApi = {
   deleteTask: (taskId) => api.delete(`/tasks/${taskId}`),
 };
 
+export const chatApi = {
+  sendMessage: (message, history = []) => api.post('/chat/', { message, history }),
+};
+
 export default api;

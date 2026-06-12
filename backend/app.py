@@ -2,6 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from routes.projects import projects_bp
 from routes.tasks import tasks_bp
+from routes.chat import chat_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -9,6 +10,7 @@ CORS(app)
 # Register Blueprints
 app.register_blueprint(projects_bp, url_prefix='/api/projects')
 app.register_blueprint(tasks_bp, url_prefix='/api')
+app.register_blueprint(chat_bp, url_prefix='/api/chat')
 
 @app.route('/')
 def home():

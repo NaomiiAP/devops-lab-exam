@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
+import ChatWidget from './components/ChatWidget';
 import Dashboard from './pages/Dashboard';
 import ProjectView from './pages/ProjectView';
 import { projectsApi } from './services/api';
@@ -71,6 +72,8 @@ function App() {
           <Dashboard />
         )}
       </div>
+
+      <ChatWidget />
     </div>
   );
 }

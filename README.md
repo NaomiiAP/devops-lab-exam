@@ -8,6 +8,7 @@ A modern full-stack project and task management system designed for simplicity a
 - **Task Management**: Add tasks to projects, delete tasks.
 - **Kanban Board**: Visualize tasks in 3 columns (To Do, In Progress, Done) with status updates.
 - **Dashboard Analytics**: View statistics with Pie and Bar charts using Chart.js.
+- **AI Chatbot**: TaskFlow assistant powered by Groq API — ask about your projects and tasks.
 - **Responsive Design**: Clean and modern UI built with Tailwind CSS.
 
 ## Tech Stack
@@ -55,7 +56,7 @@ A modern full-stack project and task management system designed for simplicity a
    ```bash
    pip install -r requirements.txt
    ```
-3. Update `MONGO_URI` in `db.py` with your MongoDB Atlas connection string.
+3. Copy `.env.example` to `.env` and set `MONGO_URI` and `GROQ_API_KEY` (get a free key at [console.groq.com](https://console.groq.com)).
 4. Run the app:
    ```bash
    python app.py
